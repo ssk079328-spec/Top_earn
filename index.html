@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ট্যাপ করে আয় করুন</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .coin-display {
+            font-size: 80px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+        
+        .coin-display:active {
+            transform: scale(0.9);
+        }
+        
+        .stats {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            padding: 18px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .ad-button {
+            background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            box-shadow: 0 5px 15px rgba(0, 201, 255, 0.4);
+        }
+        
+        .share-button {
+            background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .reward-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            padding: 15px 25px;
+            border-radius: 10px;
+            animation: slideIn 0.5s;
+            display: none;
+            z-index: 1000;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 ট্যাপ করে আয় করুন</h1>
+        
+        <div class="coin-display" onclick="tapCoin()" id="coin">💰</div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <p>💰 কয়েন</p>
+                <h2 id="coinCount">0</h2>
+            </div>
+            <div class="stat-box">
+                <p>👆 ট্যাপ</p>
+                <h2 id="tapCount">0</h2>
+            </div>
+            <div class="stat-box">
+                <p>🏆 লেভেল</p>
+                <h2 id="level">1</h2>
+            </div>
+            <div class="stat-box">
+                <p>⚡ পাওয়ার</p>
+                <h2 id="power">1x</h2>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="ad-button" onclick="watchAd()">
+                <span class="icon">📺</span>
+                <span>এড দেখে ১০০ কয়েন পান</span>
+            </button>
+            
+            <button onclick="upgradePower()">
+                <span class="icon">⚡</span>
+                <span>পাওয়ার আপগ্রেড (৫০০ কয়েন)</span>
+            </button>
+            
+            <button class="share-button" onclick="shareGame()">
+                <span class="icon">📢</span>
+                <span>বন্ধুকে শেয়ার করুন</span>
+            </button>
+            
+            <button onclick="saveGame()">
+                <span class="icon">💾</span>
+                <span>সেভ করুন</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="reward-notification" id="notification">
+        🎉 +<span id="rewardAmount">0</span> কয়েন পেলেন!
+    </div>
+
+    <script>
+        // Game Variables
+        let coins = localStorage.getItem('tapCoins') ? parseInt(localStorage.getItem('tapCoins')) : 0;
+        let taps = localStorage.getItem('totalTaps') ? parseInt(localStorage.getItem('totalTaps')) : 0;
+        let level = localStorage.getItem('playerLevel') ? parseInt(localStorage.getItem('playerLevel')) : 1;
+        let power = localStorage.getItem('tapPower') ? parseInt(localStorage.getItem('tapPower')) : 1;
+        
+        // Telegram Web App Initialization
+        if (typeof Telegram !== 'undefined') {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        }
+        
+        // DOM Elements
+        const coinElement = document.getElementById('coin');
+        const coinCountElement = document.getElementById('coinCount');
+        const tapCountElement = document.getElementById('tapCount');
+        const levelElement = document.getElementById('level');
+        const powerElement = document.getElementById('power');
+        const notificationElement = document.getElementById('notification');
+        
+        // Initialize Display
+        updateDisplay();
+        
+        // Tap Coin Function
+        function tapCoin() {
+            // Add animation
+            coinElement.classList.add('pulse');
+            setTimeout(() => coinElement.classList.remove('pulse'), 300);
+            
+            // Calculate coins earned
+            const earned = 1 * power;
+            coins += earned;
+            taps++;
+            
+            // Level up every 100 taps
+            if (taps % 100 === 0) {
+                level++;
+                showNotification(`🎉 লেভেল আপ! লেভেল ${level}`);
+            }
+            
+            // Update display
+            updateDisplay();
+            
+            // Auto-save every 10 taps
+            if (taps % 10 === 0) {
+                saveGame();
+            }
+        }
+        
+        // Watch Ad Function
+        function watchAd() {
+            showNotification("এড লোড হচ্ছে...");
+            
+            // Simulate ad loading
+            setTimeout(() => {
+                // Simulate ad completion
+                const adReward = 100;
+                coins += adReward;
+                updateDisplay();
+                
+                showNotification(`📺 এড দেখে ${adReward} কয়েন পেলেন!`);
+                saveGame();
+                
+                // In real implementation, use Unity Ads here
+                // window.unityAds.showRewardedVideo('rewardedPlacement');
+            }, 2000);
+        }
+        
+        // Upgrade Power Function
+        function upgradePower() {
+            const upgradeCost = 500;
+            
+            if (coins >= upgradeCost) {
+                coins -= upgradeCost;
+                power += 1;
+                updateDisplay();
+                showNotification(`⚡ পাওয়ার বেড়েছে! এখন ${power}x`);
+                saveGame();
+            } else {
+                showNotification(`⚠️ ${upgradeCost - coins} কয়েন প্রয়োজন`);
+            }
+        }
+        
+        // Share Game Function
+        function shareGame() {
+            const shareText = `🎮 আমি এই গেমটিতে ${coins} কয়েন জিতেছি! আপনিও খেলুন:\n${window.location.href}`;
+            
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp.shareText) {
+                Telegram.WebApp.shareText(shareText);
+            } else {
+                // Fallback for browser
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'ট্যাপ করে আয় করুন',
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(shareText);
+                    showNotification("📋 লিংক কপি করা হয়েছে!");
+                }
+            }
+        }
+        
+        // Save Game Function
+        function saveGame() {
+            localStorage.setItem('tapCoins', coins);
+            localStorage.setItem('totalTaps', taps);
+            localStorage.setItem('playerLevel', level);
+            localStorage.setItem('tapPower', power);
+            showNotification("💾 গেম সেভ করা হয়েছে!");
+        }
+        
+        // Update Display Function
+        function updateDisplay() {
+            coinCountElement.textContent = coins.toLocaleString();
+            tapCountElement.textContent = taps.toLocaleString();
+            levelElement.textContent = level;
+            powerElement.textContent = power + 'x';
+        }
+        
+        // Show Notification Function
+        function showNotification(message) {
+            if (typeof message === 'number') {
+                document.getElementById('rewardAmount').textContent = message;
+                notificationElement.style.display = 'block';
+                notificationElement.style.background = '#4CAF50';
+                
+                setTimeout(() => {
+                    notificationElement.style.display = 'none';
+                }, 3000);
+            } else {
+                notificationElement.innerHTML = message;
+                notificationElement.style.display = 'block';
+                notificationElement.style.background = '#2196F3';
+                
+                setTimeout(() => {
+                    notificationElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Daily Bonus System
+        function checkDailyBonus() {
+            const lastPlayed = localStorage.getItem('lastPlayed');
+            const today = new Date().toDateString();
+            
+            if (lastPlayed !== today) {
+                const dailyBonus = 50;
+                coins += dailyBonus;
+                updateDisplay();
+                showNotification(`🎁 ডেইলি বোনাস: ${dailyBonus} কয়েন!`);
+                localStorage.setItem('lastPlayed', today);
+                saveGame();
+            }
+        }
+        
+        // Auto-tap simulation (for demo)
+        let autoTapInterval = null;
+        function startAutoTap() {
+            if (autoTapInterval) clearInterval(autoTapInterval);
+            autoTapInterval = setInterval(() => {
+                if (Math.random() > 0.7) { // 30% chance to auto-tap
+                    tapCoin();
+                }
+            }, 1000);
+        }
+        
+        // Initialize game
+        window.onload = function() {
+            updateDisplay();
+            checkDailyBonus();
+            startAutoTap();
+            
+            // Show welcome message
+            setTimeout(() => {
+                showNotification("🎮 গেমে স্বাগতম! কয়েন জিততে ট্যাপ করুন।");
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
